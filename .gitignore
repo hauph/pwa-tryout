@@ -2,3 +2,4 @@ build
 node_modules
 .DS_Store
 functions/pwagram-fb-key.json
+functions/.env
