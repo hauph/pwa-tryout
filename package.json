@@ -48,7 +48,7 @@
     "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack-merge": "^5.8.0",
     "webpack-notifier": "^1.13.0",
-    "workbox-webpack-plugin": "^6.3.0"
+    "workbox-webpack-plugin": "^6.4.2"
   },
   "devDependencies": {
     "@babel/core": "^7.14.6",

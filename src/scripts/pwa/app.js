@@ -87,7 +87,7 @@ class App {
           if (sub === null) {
             // Create a new subscription
             const vapidPublicKey =
-              'BOpswnQ-v-q__2naZceNU9XVmKiV2IJBKPR94Lv8YjPwEmE4428iSrE1e_2zEjS9Yf9A1LNzHmycf3tJY2_OgbI';
+              'BOmdE_7-5xIui2gOettwQwJ5HEbbZ0dwvImwIjX4VQ83c-zkx5j4ewPDACzgM81ryrRkbnUrlggr6BA51vsM8e8';
             // eslint-disable-next-line
             const convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
             return reg.pushManager.subscribe({

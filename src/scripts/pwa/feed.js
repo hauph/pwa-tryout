@@ -1,3 +1,5 @@
+/* eslint-disable no-alert */
+
 const shareImageButton = document.querySelector('#share-image-button');
 const createPostArea = document.querySelector('#create-post');
 const closeCreatePostModalButton = document.querySelector(
@@ -12,15 +14,56 @@ const canvasElement = document.querySelector('#canvas');
 const captureButton = document.querySelector('#capture-btn');
 const imagePicker = document.querySelector('#image-picker');
 const imagePickerArea = document.querySelector('#pick-image');
+let picture;
+const locationBtn = document.querySelector('#location-btn');
+const locationLoader = document.querySelector('#location-loader');
+let fetchedLocation = { lat: 0, lng: 0 };
 
 // Currently not in use, allows to save assets in cache on demand otherwise
-function onSaveButtonClicked(event) {
-  console.log('clicked');
-  if ('caches' in window) {
-    caches.open('user-requested').then((cache) => {
-      cache.add('https://httpbin.org/get');
-      cache.add('/images/sf-boat.jpg');
-    });
+// function onSaveButtonClicked(event) {
+//   console.log('clicked');
+//   if ('caches' in window) {
+//     caches.open('user-requested').then((cache) => {
+//       cache.add('https://httpbin.org/get');
+//       cache.add('/images/sf-boat.jpg');
+//     });
+//   }
+// }
+
+locationBtn.addEventListener('click', (event) => {
+  if (!('geolocation' in navigator)) {
+    return;
+  }
+  let sawAlert = false;
+
+  locationBtn.style.display = 'none';
+  locationLoader.style.display = 'block';
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      locationBtn.style.display = 'inline';
+      locationLoader.style.display = 'none';
+      fetchedLocation = { lat: position.coords.latitude, lng: 0 };
+      locationInput.value = 'In Munich';
+      document.querySelector('#manual-location').classList.add('is-focused');
+    },
+    (err) => {
+      console.log(err);
+      locationBtn.style.display = 'inline';
+      locationLoader.style.display = 'none';
+      if (!sawAlert) {
+        alert("Couldn't fetch location, please enter manually!");
+        sawAlert = true;
+      }
+      fetchedLocation = { lat: 0, lng: 0 };
+    },
+    { timeout: 7000 },
+  );
+});
+
+function initializeLocation() {
+  if (!('geolocation' in navigator)) {
+    locationBtn.style.display = 'none';
   }
 }
 
@@ -74,6 +117,12 @@ captureButton.addEventListener('click', (event) => {
   videoPlayer.srcObject.getVideoTracks().forEach((track) => {
     track.stop();
   });
+  // eslint-disable-next-line
+  picture = dataURItoBlob(canvasElement.toDataURL());
+});
+
+imagePicker.addEventListener('change', (event) => {
+  picture = event.target.files[0];
 });
 
 function updateUI(data) {
@@ -115,8 +164,11 @@ function initializeMedia() {
 }
 
 function openCreatePostModal() {
-  createPostArea.style.transform = 'translateY(0)';
+  setTimeout(() => {
+    createPostArea.style.transform = 'translateY(0)';
+  }, 1);
   initializeMedia();
+  initializeLocation();
 
   if (window.deferredPrompt) {
     window.deferredPrompt.prompt();
@@ -136,25 +188,37 @@ function openCreatePostModal() {
 }
 
 function closeCreatePostModal() {
-  createPostArea.style.transform = 'translateY(100vh)';
+  imagePickerArea.style.display = 'none';
+  videoPlayer.style.display = 'none';
+  canvasElement.style.display = 'none';
+  locationBtn.style.display = 'inline';
+  captureButton.style.display = 'inline';
+  locationLoader.style.display = 'none';
+  if (videoPlayer.srcObject) {
+    videoPlayer.srcObject.getVideoTracks().forEach((track) => {
+      track.stop();
+    });
+  }
+  setTimeout(() => {
+    createPostArea.style.transform = 'translateY(100vh)';
+  }, 1);
 }
 
 function sendData() {
+  const id = new Date().toISOString();
+  const postData = new FormData();
+  postData.append('id', id);
+  postData.append('title', titleInput.value);
+  postData.append('location', locationInput.value);
+  postData.append('rawLocationLat', fetchedLocation.lat);
+  postData.append('rawLocationLng', fetchedLocation.lng);
+  postData.append('file', picture, `${id}.png`);
+
   fetch(
     'https://us-central1-learn-pwa-dc1c0.cloudfunctions.net/storePostData',
     {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({
-        id: new Date().toISOString(),
-        title: titleInput.value,
-        location: locationInput.value,
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/learn-pwa-dc1c0.appspot.com/o/IMG_2538.JPG?alt=media&token=6814fc09-5cf9-4f83-9a89-1736d463e191',
-      }),
+      body: postData,
     },
   ).then((res) => {
     console.log('Sent data', res);
@@ -228,6 +292,10 @@ export function feedInit() {
       return;
     }
 
+    if (!picture) {
+      alert('No image selected/captured!');
+    }
+
     closeCreatePostModal();
 
     if ('serviceWorker' in navigator && 'SyncManager' in window) {
@@ -236,6 +304,8 @@ export function feedInit() {
           id: new Date().toISOString(),
           title: titleInput.value,
           location: locationInput.value,
+          picture,
+          rawLocation: fetchedLocation,
         };
         // eslint-disable-next-line
         writeData('sync-posts', post)

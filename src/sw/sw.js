@@ -110,21 +110,19 @@ self.addEventListener('sync', (event) => {
       readAllData('sync-posts').then((data) => {
         // eslint-disable-next-line
         for (const dt of data) {
+          const postData = new FormData();
+          postData.append('id', dt.id);
+          postData.append('title', dt.title);
+          postData.append('location', dt.location);
+          postData.append('rawLocationLat', dt.rawLocation.lat);
+          postData.append('rawLocationLng', dt.rawLocation.lng);
+          postData.append('file', dt.picture, `${dt.id}.png`);
+
           fetch(
             'https://us-central1-learn-pwa-dc1c0.cloudfunctions.net/storePostData',
             {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-              },
-              body: JSON.stringify({
-                id: dt.id,
-                title: dt.title,
-                location: dt.location,
-                image:
-                  'https://firebasestorage.googleapis.com/v0/b/learn-pwa-dc1c0.appspot.com/o/IMG_2538.JPG?alt=media&token=6814fc09-5cf9-4f83-9a89-1736d463e191',
-              }),
+              body: postData,
             },
           )
             // eslint-disable-next-line
