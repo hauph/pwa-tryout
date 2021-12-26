@@ -14,6 +14,11 @@ const imagePicker = document.querySelector('#image-picker');
 const imagePickerArea = document.querySelector('#pick-image');
 const locationBtn = document.querySelector('#location-btn');
 const locationLoader = document.querySelector('#location-loader');
+const modal = document.getElementById('myModal');
+const modalImg = document.getElementById('modal-content');
+const titleText = document.getElementById('modal-title');
+const captionText = document.getElementById('modal-caption');
+const modalCloseBtn = document.getElementById('modal-close');
 
 class Feed {
   picture;
@@ -128,12 +133,11 @@ class Feed {
 
   createCard(data) {
     const cardWrapper = document.createElement('div');
-    cardWrapper.className = 'shared-moment-card mdl-card mdl-shadow--2dp';
+    cardWrapper.className =
+      'shared-moment-card mdl-cell--3-col mdl-card mdl-shadow--2dp';
     const cardTitle = document.createElement('div');
     cardTitle.className = 'mdl-card__title';
     cardTitle.style.backgroundImage = `url(${data.image})`;
-    cardTitle.style.backgroundSize = 'cover';
-    cardTitle.style.height = '180px';
     cardWrapper.appendChild(cardTitle);
     const cardTitleTextElement = document.createElement('h2');
     cardTitleTextElement.style.color = 'white';
@@ -145,8 +149,21 @@ class Feed {
     cardSupportingText.textContent = data.location;
     cardSupportingText.style.textAlign = 'center';
     cardWrapper.appendChild(cardSupportingText);
+    cardWrapper.setAttribute('data-image', data.image);
+    cardWrapper.setAttribute('id', data.fbId);
+    console.log(data);
     window.componentHandler.upgradeElement(cardWrapper);
     sharedMomentsArea.appendChild(cardWrapper);
+    cardTitle.onclick = () => {
+      this.toggleImgModal(data);
+    };
+  }
+
+  toggleImgModal(data) {
+    modal.style.display = 'block';
+    modalImg.src = data.image;
+    titleText.innerHTML = data.title;
+    captionText.innerHTML = data.location;
   }
 
   updateUI(data) {
@@ -169,7 +186,9 @@ class Feed {
         const dataArray = [];
         // eslint-disable-next-line
         for (const key in data) {
-          dataArray.push(data[key]);
+          const fbObj = { ...data[key] };
+          fbObj.fbId = key;
+          dataArray.push(fbObj);
         }
         this.updateUI(dataArray);
       });
@@ -312,6 +331,18 @@ class Feed {
         { timeout: 7000 },
       );
     });
+
+    // Button to close modal
+    modalCloseBtn.onclick = function () {
+      modal.style.display = 'none';
+    };
+
+    modal.onclick = function (e) {
+      const target = e.target;
+      if (target === modal) {
+        modal.style.display = 'none';
+      }
+    };
   }
 }
 

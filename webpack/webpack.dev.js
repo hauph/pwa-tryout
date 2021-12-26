@@ -56,12 +56,15 @@ module.exports = merge(common, {
             baseDir: [path.resolve('.', 'build')],
           },
           open: false,
+          injectChanges: true,
           files: [
             'src/',
             {
               match: [
+                'src/*.html',
                 'src/pages/*.html',
                 'src/pages/**/*.html',
+                'src/styles/**/*.css',
                 'src/scripts/global-plugin-list.json',
               ],
               fn(event, file) {
@@ -73,6 +76,8 @@ module.exports = merge(common, {
                   }
                   console.log('command passed!');
                 });
+                const bs = require('browser-sync').get('bs-webpack-plugin');
+                bs.reload();
               },
             },
           ],

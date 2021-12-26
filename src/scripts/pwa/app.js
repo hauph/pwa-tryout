@@ -88,8 +88,8 @@ class App {
             // Create a new subscription
             const vapidPublicKey =
               'BOmdE_7-5xIui2gOettwQwJ5HEbbZ0dwvImwIjX4VQ83c-zkx5j4ewPDACzgM81ryrRkbnUrlggr6BA51vsM8e8';
-            // eslint-disable-next-line
             const convertedVapidPublicKey =
+              // eslint-disable-next-line
               urlBase64ToUint8Array(vapidPublicKey);
             return reg.pushManager.subscribe({
               userVisibleOnly: true,

@@ -81,12 +81,7 @@
               <a class="mdl-navigation__link" href="/pages/help">Help</a>
               <div class="drawer-option">
                 <button
-                  class="
-                    enable-notifications
-                    mdl-button mdl-js-button
-                    mdl-button--raised mdl-button--colored
-                    mdl-color--accent
-                  "
+                  class="enable-notifications mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-color--accent"
                 >
                   Enable Notifications
                 </button>
@@ -101,12 +96,7 @@
             <a class="mdl-navigation__link" href="/pages/help">Help</a>
             <div class="drawer-option">
               <button
-                class="
-                  enable-notifications
-                  mdl-button mdl-js-button
-                  mdl-button--raised mdl-button--colored
-                  mdl-color--accent
-                "
+                class="enable-notifications mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-color--accent"
               >
                 Enable Notifications
               </button>
@@ -118,10 +108,7 @@
             <video id="player" autoplay></video>
             <canvas id="canvas" width="320px" height="240px"></canvas>
             <button
-              class="
-                mdl-button mdl-js-button
-                mdl-button--raised mdl-button--colored
-              "
+              class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored"
               id="capture-btn"
             >
               Capture
@@ -132,11 +119,7 @@
             </div>
             <form>
               <div
-                class="
-                  input-section
-                  mdl-textfield mdl-js-textfield
-                  mdl-textfield--floating-label
-                "
+                class="input-section mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
               >
                 <input class="mdl-textfield__input" type="text" id="title" />
                 <label class="mdl-textfield__label" for="title" name="title"
@@ -144,11 +127,7 @@
                 >
               </div>
               <div
-                class="
-                  input-section
-                  mdl-textfield mdl-js-textfield
-                  mdl-textfield--floating-label
-                "
+                class="input-section mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
                 id="manual-location"
               >
                 <input class="mdl-textfield__input" type="text" id="location" />
@@ -160,18 +139,22 @@
                 >
               </div>
               <div class="input-section">
-                <button class="mdl-button mdl-js-button mdl-button mdl-button--colored" type="button" id="location-btn">Get Location
+                <button
+                  class="mdl-button mdl-js-button mdl-button mdl-button--colored"
+                  type="button"
+                  id="location-btn"
+                >
+                  Get Location
                 </button>
-                <div class="mdl-spinner mdl-js-spinner is-active" id="location-loader"></div>
+                <div
+                  class="mdl-spinner mdl-js-spinner is-active"
+                  id="location-loader"
+                ></div>
               </div>
               <br />
               <div>
                 <button
-                  class="
-                    mdl-button mdl-js-button
-                    mdl-button--raised mdl-button--colored
-                    mdl-color--accent
-                  "
+                  class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-color--accent"
                   type="submit"
                   id="post-btn"
                 >
@@ -204,14 +187,11 @@
             <h5 class="text-center mdl-color-text--primary">
               Share your Moments
             </h5>
-            <div id="shared-moments"></div>
+            <div id="shared-moments" class="mdl-grid"></div>
           </div>
           <div class="floating-button">
             <button
-              class="
-                mdl-button mdl-js-button
-                mdl-button--fab mdl-button--colored
-              "
+              class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored"
               id="share-image-button"
             >
               <i class="material-icons">add</i>
@@ -228,6 +208,25 @@
             <button type="button" class="mdl-snackbar__action"></button>
           </div>
         </main>
+
+        <!-- The Modal -->
+        <div id="myModal" class="modal">
+          <!-- The Close Button -->
+          <span id="modal-close">&times;</span>
+
+          <!-- Modal Content (The Image) -->
+          <div class="mdl-card modal-content">
+            <img id="modal-content" />
+            <h2
+              id="modal-title"
+              class="mdl-card__title"
+              style="height: auto; cursor: unset"
+            ></h2>
+            <div id="modal-caption"></div>
+          </div>
+
+          <!-- Modal Caption (Image Text) -->
+        </div>
       </div>
     </div>
   </body>
