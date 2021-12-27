@@ -20,31 +20,20 @@ const titleText = document.getElementById('modal-title');
 const captionText = document.getElementById('modal-caption');
 const modalCloseBtn = document.getElementById('modal-close');
 
-class Feed {
-  picture;
-
-  constructor() {
-    this.fetchedLocation = { lat: 0, lng: 0 };
-    this.networkDataReceived = false;
-
+export default class FeedView {
+  constructor(controller) {
+    const instance = this.constructor.instance;
+    if (instance) {
+      return instance;
+    }
+    this.controller = controller;
+    this.model = controller.model;
     this.init();
   }
 
   init() {
-    this.fetchData();
     this.formSubmit();
     this.addEvents();
-
-    // IndexedDB then Network
-    if ('indexedDB' in window) {
-      // eslint-disable-next-line
-      readAllData('posts').then((data) => {
-        if (!this.networkDataReceived) {
-          console.log('From cache', data);
-          this.updateUI(data);
-        }
-      });
-    }
   }
 
   initializeLocation() {
@@ -148,10 +137,19 @@ class Feed {
     cardSupportingText.className = 'mdl-card__supporting-text';
     cardSupportingText.textContent = data.location;
     cardSupportingText.style.textAlign = 'center';
+    const deleteButton = document.createElement('div');
+    deleteButton.className = 'btn__delete';
+    const deleteIcon = document.createElement('span');
+    deleteIcon.className = 'material-icons';
+    deleteIcon.textContent = 'delete_outline';
+    deleteButton.appendChild(deleteIcon);
+    deleteButton.onclick = () => {
+      this.deleteButton(data.fbId);
+    };
+    cardWrapper.appendChild(deleteButton);
     cardWrapper.appendChild(cardSupportingText);
     cardWrapper.setAttribute('data-image', data.image);
     cardWrapper.setAttribute('id', data.fbId);
-    console.log(data);
     window.componentHandler.upgradeElement(cardWrapper);
     sharedMomentsArea.appendChild(cardWrapper);
     cardTitle.onclick = () => {
@@ -166,54 +164,15 @@ class Feed {
     captionText.innerHTML = data.location;
   }
 
+  deleteFeed(fbId) {
+    this.controller.deleteData(fbId);
+  }
+
   updateUI(data) {
     this.clearCards();
     for (let i = 0; i < data.length; i++) {
       this.createCard(data[i]);
     }
-  }
-
-  fetchData() {
-    fetch(
-      'https://learn-pwa-dc1c0-default-rtdb.asia-southeast1.firebasedatabase.app/posts.json',
-    )
-      .then((res) => {
-        return res.json();
-      })
-      .then((data) => {
-        this.networkDataReceived = true;
-        console.log('From web', data);
-        const dataArray = [];
-        // eslint-disable-next-line
-        for (const key in data) {
-          const fbObj = { ...data[key] };
-          fbObj.fbId = key;
-          dataArray.push(fbObj);
-        }
-        this.updateUI(dataArray);
-      });
-  }
-
-  sendData() {
-    const id = new Date().toISOString();
-    const postData = new FormData();
-    postData.append('id', id);
-    postData.append('title', titleInput.value);
-    postData.append('location', locationInput.value);
-    postData.append('rawLocationLat', this.fetchedLocation.lat);
-    postData.append('rawLocationLng', this.fetchedLocation.lng);
-    postData.append('file', this.picture, `${id}.png`);
-
-    fetch(
-      'https://us-central1-learn-pwa-dc1c0.cloudfunctions.net/storePostData',
-      {
-        method: 'POST',
-        body: postData,
-      },
-    ).then((res) => {
-      console.log('Sent data', res);
-      this.updateUI();
-    });
   }
 
   formSubmit() {
@@ -225,40 +184,12 @@ class Feed {
         return;
       }
 
-      if (!this.picture) {
+      if (!this.model.picture) {
         alert('No image selected/captured!');
       }
 
       this.closeCreatePostModal();
-
-      if ('serviceWorker' in navigator && 'SyncManager' in window) {
-        navigator.serviceWorker.ready.then((sw) => {
-          const post = {
-            id: new Date().toISOString(),
-            title: titleInput.value,
-            location: locationInput.value,
-            picture: this.picture,
-            rawLocation: this.fetchedLocation,
-          };
-          // eslint-disable-next-line
-          writeData('sync-posts', post)
-            .then(() => {
-              return sw.sync.register('sync-new-posts');
-            })
-            .then(() => {
-              const snackbarContainer = document.querySelector(
-                '#confirmation-toast',
-              );
-              const data = { message: 'Your Post was saved for syncing!' };
-              snackbarContainer.MaterialSnackbar.showSnackbar(data);
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        });
-      } else {
-        this.sendData();
-      }
+      this.controller.handleFormSubmit(titleInput, locationInput);
     });
   }
 
@@ -290,12 +221,12 @@ class Feed {
         track.stop();
       });
       // eslint-disable-next-line
-      this.picture = dataURItoBlob(canvasElement.toDataURL());
+      this.model.updatePicture(dataURItoBlob(canvasElement.toDataURL()));
     });
 
     // Image picker
     imagePicker.addEventListener('change', (event) => {
-      this.picture = event.target.files[0];
+      this.model.updatePicture(event.target.files[0]);
     });
 
     // Location button
@@ -312,7 +243,7 @@ class Feed {
         (position) => {
           locationBtn.style.display = 'inline';
           locationLoader.style.display = 'none';
-          this.fetchedLocation = { lat: position.coords.latitude, lng: 0 };
+          this.model.updateLocation({ lat: position.coords.latitude, lng: 0 });
           locationInput.value = 'In Munich';
           document
             .querySelector('#manual-location')
@@ -326,7 +257,7 @@ class Feed {
             alert("Couldn't fetch location, please enter manually!");
             sawAlert = true;
           }
-          this.fetchedLocation = { lat: 0, lng: 0 };
+          this.model.updateLocation({ lat: 0, lng: 0 });
         },
         { timeout: 7000 },
       );
@@ -344,8 +275,4 @@ class Feed {
       }
     };
   }
-}
-
-export default function feedInstance() {
-  return new Feed();
 }

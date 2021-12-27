@@ -19,8 +19,11 @@
   display: block;
   width: 100%;
   max-width: 1000px;
-  position: relative;
   cursor: auto;
+}
+
+.modal-content .modal__img-title {
+  position: relative;
 }
 
 /* Caption of Modal Image (Image Text) - Same Width as the Image */
@@ -47,7 +50,7 @@
 
 .modal-content #modal-title {
   position: absolute;
-  bottom: 50px;
+  bottom: 0;
   color: #fff;
   width: 100%;
   margin: 0;

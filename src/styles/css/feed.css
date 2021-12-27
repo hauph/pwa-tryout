@@ -54,10 +54,36 @@
 
 .shared-moment-card.mdl-card {
   margin: 10px auto;
+  position: relative;
 }
 
 .mdl-card__title {
   background-size: cover;
   height: 300px;
   cursor: pointer;
+}
+
+.shared-moment-card .btn__delete {
+  height: 50px;
+  width: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  position: absolute;
+  right: 5px;
+  top: -50px;
+  background: rgb(63, 81, 181);
+  cursor: pointer;
+  transition: 0.35s all ease;
+}
+
+.shared-moment-card:hover .btn__delete {
+  top: 5px;
+}
+
+@media (max-width: 768px) {
+  .shared-moment-card .btn__delete {
+    top: 5px;
+  }
 }
