@@ -14,6 +14,7 @@ class FeedController {
 
   init() {
     this.fetchData();
+    this.reloadData();
 
     // IndexedDB then Network
     if ('indexedDB' in window) {
@@ -25,6 +26,19 @@ class FeedController {
         }
       });
     }
+  }
+
+  reloadData() {
+    const _this = this;
+    setInterval(async () => {
+      // eslint-disable-next-line
+      const data = await readAllData('reload');
+      if (data.length) {
+        _this.fetchData();
+        // eslint-disable-next-line
+        clearAllData('reload');
+      }
+    }, 1000);
   }
 
   fetchData() {
@@ -55,7 +69,6 @@ class FeedController {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          // 'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: JSON.stringify({ fbId }),
       },
@@ -64,12 +77,12 @@ class FeedController {
     });
   }
 
-  sendData(titleInput, locationInput) {
+  sendData(title, location) {
     const id = new Date().toISOString();
     const postData = new FormData();
     postData.append('id', id);
-    postData.append('title', titleInput.value);
-    postData.append('location', locationInput.value);
+    postData.append('title', title);
+    postData.append('location', location);
     postData.append('rawLocationLat', this.model.fetchedLocation.lat);
     postData.append('rawLocationLng', this.model.fetchedLocation.lng);
     postData.append('file', this.model.picture, `${id}.png`);
@@ -97,15 +110,15 @@ class FeedController {
       });
   }
 
-  handleFormSubmit(titleInput, locationInput) {
+  handleFormSubmit(title, location) {
     if ('serviceWorker' in navigator && 'SyncManager' in window) {
       navigator.serviceWorker.ready.then((sw) => {
         const post = {
           id: new Date().toISOString(),
-          title: titleInput.value,
-          location: locationInput.value,
           picture: this.model.picture,
           rawLocation: this.model.fetchedLocation,
+          title,
+          location,
         };
         // eslint-disable-next-line
         writeData('sync-posts', post)
@@ -124,7 +137,7 @@ class FeedController {
           });
       });
     } else {
-      this.sendData(titleInput, locationInput);
+      this.sendData(title, location);
     }
   }
 }

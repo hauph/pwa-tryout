@@ -1,3 +1,5 @@
+import Toastr from '../toastr/toastr';
+
 const shareImageButton = document.querySelector('#share-image-button');
 const createPostArea = document.querySelector('#create-post');
 const closeCreatePostModalButton = document.querySelector(
@@ -104,6 +106,8 @@ export default class FeedView {
     locationBtn.style.display = 'inline';
     captureButton.style.display = 'inline';
     locationLoader.style.display = 'none';
+    titleInput.value = '';
+    locationInput.value = '';
     if (videoPlayer.srcObject) {
       videoPlayer.srcObject.getVideoTracks().forEach((track) => {
         track.stop();
@@ -180,22 +184,25 @@ export default class FeedView {
       event.preventDefault();
 
       if (titleInput.value.trim() === '' || locationInput.value.trim() === '') {
-        alert('Please enter valid data!');
+        Toastr('error', 'Please enter valid data!', '');
         return;
       }
 
       if (!this.model.picture) {
-        alert('No image selected/captured!');
+        Toastr('error', 'No image selected/captured!', '');
+        return;
       }
 
+      this.controller.handleFormSubmit(titleInput.value, locationInput.value);
       this.closeCreatePostModal();
-      this.controller.handleFormSubmit(titleInput, locationInput);
     });
   }
 
   addEvents() {
     // Share image button
-    shareImageButton.addEventListener('click', this.openCreatePostModal);
+    shareImageButton.addEventListener('click', () => {
+      this.openCreatePostModal();
+    });
 
     // Close create post modal button
     closeCreatePostModalButton.addEventListener(
@@ -250,11 +257,15 @@ export default class FeedView {
             .classList.add('is-focused');
         },
         (err) => {
-          console.log(err);
+          console.error(err);
           locationBtn.style.display = 'inline';
           locationLoader.style.display = 'none';
           if (!sawAlert) {
-            alert("Couldn't fetch location, please enter manually!");
+            Toastr(
+              'error',
+              "Couldn't fetch location, please enter manually!",
+              '',
+            );
             sawAlert = true;
           }
           this.model.updateLocation({ lat: 0, lng: 0 });

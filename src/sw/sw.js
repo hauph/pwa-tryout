@@ -131,6 +131,9 @@ self.addEventListener('sync', (event) => {
               if (res.ok) {
                 res.json().then((resData) => {
                   deleteItemFromData('sync-posts', resData.id);
+                  writeData('reload', {
+                    id: new Date().toISOString(),
+                  });
                 });
               }
             })
