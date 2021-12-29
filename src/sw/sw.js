@@ -39,8 +39,7 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  const url =
-    'https://learn-pwa-dc1c0-default-rtdb.asia-southeast1.firebasedatabase.app/posts.json';
+  const url = `${baseURL()}fetchPostData`;
 
   if (event.request.url.indexOf(url) > -1) {
     event.respondWith(
@@ -118,13 +117,10 @@ self.addEventListener('sync', (event) => {
           postData.append('rawLocationLng', dt.rawLocation.lng);
           postData.append('file', dt.picture, `${dt.id}.png`);
 
-          fetch(
-            'https://us-central1-learn-pwa-dc1c0.cloudfunctions.net/storePostData',
-            {
-              method: 'POST',
-              body: postData,
-            },
-          )
+          fetch(`${baseURL()}storePostData`, {
+            method: 'POST',
+            body: postData,
+          })
             // eslint-disable-next-line
             .then((res) => {
               console.log('Sent data', res);
@@ -139,6 +135,36 @@ self.addEventListener('sync', (event) => {
             })
             .catch((err) => {
               console.log('Error while sending data', err);
+            });
+        }
+      }),
+    );
+  } else if (event.tag === 'deleted-posts') {
+    console.log('[Service Worker] Syncing Deleted Posts');
+    event.waitUntil(
+      readAllData('sync-deleted-posts').then((data) => {
+        // eslint-disable-next-line
+        for (const dt of data) {
+          fetch(`${baseURL()}deletePostData`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ fbId: dt.fbId }),
+          })
+            // eslint-disable-next-line
+            .then((res) => {
+              if (res.ok) {
+                res.json().then((resData) => {
+                  deleteItemFromData('sync-deleted-posts', resData.id);
+                  writeData('reload', {
+                    id: new Date().toISOString(),
+                  });
+                });
+              }
+            })
+            .catch((err) => {
+              console.log('Error while deleting data', err);
             });
         }
       }),

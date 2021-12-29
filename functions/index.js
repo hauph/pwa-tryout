@@ -31,6 +31,42 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL:
     "https://learn-pwa-dc1c0-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  databaseAuthVariableOverride: {
+    uid: `${process.env.AUTH_UID}`,
+  },
+});
+
+exports.storeSubscriptionData = functions.https.onRequest(function(request, response) {
+  cors(request, response, function() {
+    const newSub = request.body.newSub;
+    admin
+        .database()
+        .ref("subscriptions")
+        .push(newSub)
+        .then(function() {
+          const message = "New subscription added successfully";
+          console.log(message);
+          response
+              .status(201)
+              .json({message});
+        })
+        .catch(function(error) {
+          console.log("Add subscription failed: " + error.message);
+        });
+  });
+});
+
+exports.fetchPostData = functions.https.onRequest(function(request, response) {
+  cors(request, response, function() {
+    admin
+        .database()
+        .ref("posts")
+        .on("value", (snapshot) => {
+          response.status(200).json(snapshot.val());
+        }, (errorObject) => {
+          console.log("The read failed: " + errorObject.name);
+        });
+  });
 });
 
 exports.storePostData = functions.https.onRequest(function(request, response) {
@@ -128,7 +164,7 @@ exports.storePostData = functions.https.onRequest(function(request, response) {
                               JSON.stringify({
                                 title: "New Post",
                                 content: "New Post added!",
-                                openUrl: "/pages/help",
+                                openUrl: "/",
                               })
                           )
                           .catch(function(err) {
@@ -159,5 +195,42 @@ exports.deletePostData = functions.https.onRequest(function(
     request,
     response
 ) {
-  cors(request, response, function() {});
+  cors(request, response, function() {
+    const fbId = request.body.fbId;
+    admin
+        .database()
+        .ref(`posts/${fbId}`)
+        .remove()
+        .then(function() {
+          webpush.setVapidDetails(
+              "mailto:hauph93@gmail.com",
+              process.env.WEB_PUSH_PUBLIC,
+              process.env.WEB_PUSH_SECRET
+          );
+          return admin.database().ref("subscriptions").once("value");
+        })
+        .then(function(subscriptions) {
+          subscriptions.forEach(function(sub) {
+            const pushConfig = sub.val();
+            webpush
+                .sendNotification(
+                    pushConfig,
+                    JSON.stringify({
+                      title: "Notification",
+                      content: "Post deleted!",
+                      openUrl: "/",
+                    })
+                )
+                .catch(function(err) {
+                  console.log(err);
+                });
+          });
+          response
+              .status(200)
+              .json({message: "Data deleted", id: fbId});
+        })
+        .catch(function(error) {
+          console.log("Remove failed: " + error.message);
+        });
+  });
 });

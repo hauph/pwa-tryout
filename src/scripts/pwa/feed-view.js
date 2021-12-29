@@ -143,12 +143,13 @@ export default class FeedView {
     cardSupportingText.style.textAlign = 'center';
     const deleteButton = document.createElement('div');
     deleteButton.className = 'btn__delete';
+    deleteButton.setAttribute('title', 'Delete this post');
     const deleteIcon = document.createElement('span');
     deleteIcon.className = 'material-icons';
     deleteIcon.textContent = 'delete_outline';
     deleteButton.appendChild(deleteIcon);
     deleteButton.onclick = () => {
-      this.deleteButton(data.fbId);
+      this.deleteFeed(data.fbId);
     };
     cardWrapper.appendChild(deleteButton);
     cardWrapper.appendChild(cardSupportingText);

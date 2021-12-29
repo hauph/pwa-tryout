@@ -42,9 +42,8 @@ class FeedController {
   }
 
   fetchData() {
-    fetch(
-      'https://learn-pwa-dc1c0-default-rtdb.asia-southeast1.firebasedatabase.app/posts.json',
-    )
+    // eslint-disable-next-line
+    fetch(`${baseURL()}fetchPostData`)
       .then((res) => {
         return res.json();
       })
@@ -62,18 +61,72 @@ class FeedController {
       });
   }
 
-  deleteData(fbId) {
-    fetch(
-      'https://us-central1-learn-pwa-dc1c0.cloudfunctions.net/deletePostData',
-      {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ fbId }),
-      },
-    ).then((res) => {
-      console.log(res);
+  async deleteData(fbId) {
+    const promise = (() => {
+      return new Promise((resolve, reject) => {
+        if ('serviceWorker' in navigator && 'SyncManager' in window) {
+          navigator.serviceWorker.ready.then((sw) => {
+            // eslint-disable-next-line
+            writeData('sync-deleted-posts', {
+              fbId,
+            })
+              .then(() => {
+                return sw.sync.register('deleted-posts');
+              })
+              .then(() => {
+                const snackbarContainer = document.querySelector(
+                  '#confirmation-toast',
+                );
+                const data = {
+                  message:
+                    'Your post was saved for deleting when you are back online!',
+                };
+                snackbarContainer.MaterialSnackbar.showSnackbar(data);
+                resolve(true);
+              })
+              .catch((err) => {
+                console.log('deleteData > sync-deleted-posts >>>', err);
+                reject(err);
+              });
+          });
+        } else {
+          // eslint-disable-next-line
+          fetch(`${baseURL()}deletePostData`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ fbId }),
+          })
+            .then((res) => {
+              resolve(true);
+            })
+            .catch((err) => {
+              console.log('deleteData >>>', err);
+              reject(err);
+            });
+        }
+      });
+    })();
+
+    try {
+      const result = await promise;
+      if (result) {
+        const element = document.getElementById(fbId);
+        if (element) element.remove();
+      }
+    } catch (error) {
+      console.log('promise error >>>', error);
+    }
+  }
+
+  deleteDataOffline() {
+    // eslint-disable-next-line
+    readAllData('sync-deleted-posts').then((data) => {
+      data.forEach((dt) => {
+        const element = document.getElementById(dt.fbId);
+        if (element) element.remove();
+      });
     });
   }
 
@@ -87,13 +140,11 @@ class FeedController {
     postData.append('rawLocationLng', this.model.fetchedLocation.lng);
     postData.append('file', this.model.picture, `${id}.png`);
 
-    fetch(
-      'https://us-central1-learn-pwa-dc1c0.cloudfunctions.net/storePostData',
-      {
-        method: 'POST',
-        body: postData,
-      },
-    )
+    // eslint-disable-next-line
+    fetch(`${baseURL()}storePostData`, {
+      method: 'POST',
+      body: postData,
+    })
       .then((res) => {
         console.log('Sent data', res);
         return res.json();
@@ -129,7 +180,7 @@ class FeedController {
             const snackbarContainer = document.querySelector(
               '#confirmation-toast',
             );
-            const data = { message: 'Your Post was saved for syncing!' };
+            const data = { message: 'Your post was saved for syncing!' };
             snackbarContainer.MaterialSnackbar.showSnackbar(data);
           })
           .catch((err) => {

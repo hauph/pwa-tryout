@@ -100,17 +100,15 @@ class App {
         })
         .then((newSub) => {
           if (newSub)
-            return fetch(
-              'https://learn-pwa-dc1c0-default-rtdb.asia-southeast1.firebasedatabase.app/subscriptions.json',
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Accept: 'application/json',
-                },
-                body: JSON.stringify(newSub),
+            // eslint-disable-next-line
+            return fetch(`${baseURL()}storeSubscriptionData`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
               },
-            );
+              body: JSON.stringify({ newSub }),
+            });
         })
         .then((res) => {
           if (res && res.ok) {

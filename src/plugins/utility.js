@@ -9,6 +9,9 @@ const dbPromise = idb.open('posts-store', 1, (db) => {
   if (!db.objectStoreNames.contains('reload')) {
     db.createObjectStore('reload', { keyPath: 'id' });
   }
+  if (!db.objectStoreNames.contains('sync-deleted-posts')) {
+    db.createObjectStore('sync-deleted-posts', { keyPath: 'fbId' });
+  }
 });
 
 function writeData(st, data) {
@@ -75,4 +78,8 @@ function dataURItoBlob(dataURI) {
   }
   const blob = new Blob([ab], { type: mimeString });
   return blob;
+}
+
+function baseURL() {
+  return 'https://us-central1-learn-pwa-dc1c0.cloudfunctions.net/';
 }
