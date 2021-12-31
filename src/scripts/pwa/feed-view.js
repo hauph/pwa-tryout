@@ -1,3 +1,4 @@
+import tippy from 'tippy.js';
 import Toastr from '../toastr/toastr';
 
 const shareImageButton = document.querySelector('#share-image-button');
@@ -21,6 +22,8 @@ const modalImg = document.getElementById('modal-content');
 const titleText = document.getElementById('modal-title');
 const captionText = document.getElementById('modal-caption');
 const modalCloseBtn = document.getElementById('modal-close');
+const modalPrevBtn = document.getElementById('modal--btn-prev');
+const modalNextBtn = document.getElementById('modal--btn-next');
 
 export default class FeedView {
   constructor(controller) {
@@ -143,7 +146,7 @@ export default class FeedView {
     cardSupportingText.style.textAlign = 'center';
     const deleteButton = document.createElement('div');
     deleteButton.className = 'btn__delete';
-    deleteButton.setAttribute('title', 'Delete this post');
+    deleteButton.setAttribute('data-tippy-content', 'Delete this post');
     const deleteIcon = document.createElement('span');
     deleteIcon.className = 'material-icons';
     deleteIcon.textContent = 'delete_outline';
@@ -167,17 +170,26 @@ export default class FeedView {
     modalImg.src = data.image;
     titleText.innerHTML = data.title;
     captionText.innerHTML = data.location;
+    modal.setAttribute('data-current-post', data.fbId);
   }
 
   deleteFeed(fbId) {
     this.controller.deleteData(fbId);
   }
 
-  updateUI(data) {
+  async updateUI(data) {
     this.clearCards();
     for (let i = 0; i < data.length; i++) {
-      this.createCard(data[i]);
+      // eslint-disable-next-line
+      const shouldRender = await getSpecificData(
+        'sync-deleted-posts',
+        data[i].fbId,
+      );
+      if (!shouldRender) {
+        this.createCard(data[i]);
+      }
     }
+    tippy('[data-tippy-content]');
   }
 
   formSubmit() {
@@ -251,11 +263,34 @@ export default class FeedView {
         (position) => {
           locationBtn.style.display = 'inline';
           locationLoader.style.display = 'none';
-          this.model.updateLocation({ lat: position.coords.latitude, lng: 0 });
-          locationInput.value = 'In Munich';
-          document
-            .querySelector('#manual-location')
-            .classList.add('is-focused');
+          this.model.updateLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+          fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`,
+          )
+            .then((res) => {
+              return res.json();
+            })
+            .then((data) => {
+              locationInput.value = data.address.road;
+              document
+                .querySelector('#manual-location')
+                .classList.add('is-focused');
+            })
+            .catch((err) => {
+              console.error('error fetching location >>>', err);
+              if (!sawAlert) {
+                Toastr(
+                  'error',
+                  "Couldn't fetch location, please enter manually!",
+                  '',
+                );
+                sawAlert = true;
+              }
+              this.model.updateLocation({ lat: 0, lng: 0 });
+            });
         },
         (err) => {
           console.error(err);
@@ -271,7 +306,6 @@ export default class FeedView {
           }
           this.model.updateLocation({ lat: 0, lng: 0 });
         },
-        { timeout: 7000 },
       );
     });
 
@@ -286,5 +320,15 @@ export default class FeedView {
         modal.style.display = 'none';
       }
     };
+
+    modalPrevBtn.addEventListener('click', () => {
+      const currentData = modal.getAttribute('data-current-post');
+      this.controller.handlePrevNext('prev', currentData);
+    });
+
+    modalNextBtn.addEventListener('click', () => {
+      const currentData = modal.getAttribute('data-current-post');
+      this.controller.handlePrevNext('next', currentData);
+    });
   }
 }

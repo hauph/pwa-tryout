@@ -31,6 +31,14 @@ function readAllData(st) {
   });
 }
 
+function getSpecificData(st, key) {
+  return dbPromise.then((db) => {
+    const tx = db.transaction(st, 'readonly');
+    const store = tx.objectStore(st);
+    return store.get(key);
+  });
+}
+
 function clearAllData(st) {
   return dbPromise.then((db) => {
     const tx = db.transaction(st, 'readwrite');

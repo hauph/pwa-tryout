@@ -45,6 +45,7 @@
     "serve": "^12.0.0",
     "serviceworker-webpack-plugin": "^1.0.1",
     "stylelint-webpack-plugin": "^2.2.2",
+    "tippy.js": "^6.3.7",
     "toastr": "^2.1.4",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack-merge": "^5.8.0",

@@ -87,3 +87,15 @@
     top: 5px;
   }
 }
+
+@media (min-width: 480px) and (max-width: 839px) {
+  .shared-moment-card.mdl-card {
+    width: 45%;
+  }
+}
+
+@media (max-width: 479px) {
+  .shared-moment-card.mdl-card {
+    width: 100%;
+  }
+}

@@ -234,3 +234,30 @@ exports.deletePostData = functions.https.onRequest(function(
         });
   });
 });
+
+exports.deleteSubcribeData = functions.https.onRequest(function(
+    request,
+    response
+) {
+  cors(request, response, function() {
+    const endpoint = request.body.endpoint;
+    admin
+        .database()
+        .ref("subscriptions")
+        .orderByChild("endpoint")
+        .equalTo(endpoint)
+        .once("value", (snapshot) => {
+          snapshot.forEach((deedSnapshot) =>{
+            deedSnapshot.ref.remove();
+          });
+        })
+        .then(function() {
+          response
+              .status(200)
+              .json({message: "Data deleted", endpoint});
+        })
+        .catch(function(error) {
+          console.log("Remove sub failed: " + error.message);
+        });
+  });
+});

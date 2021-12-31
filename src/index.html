@@ -77,8 +77,15 @@
             <div class="mdl-layout-spacer"></div>
             <!-- Navigation. We hide it in small screens. -->
             <nav class="mdl-navigation mdl-layout--large-screen-only">
-              <a class="mdl-navigation__link" href="/">Feed</a>
-              <a class="mdl-navigation__link" href="/pages/help">Help</a>
+              <a class="mdl-navigation__link" href="/">Home</a>
+              <a class="mdl-navigation__link" href="/pages/info">Info</a>
+              <a
+                class="mdl-navigation__link"
+                href="https://github.com/hauph/pwa-tryout"
+                target="_blank"
+                rel="noopener noreferrer"
+                >View Source</a
+              >
               <div class="drawer-option">
                 <button
                   class="enable-notifications mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-color--accent"
@@ -92,8 +99,15 @@
         <div class="mdl-layout__drawer">
           <span class="mdl-layout-title">PWAGram</span>
           <nav class="mdl-navigation">
-            <a class="mdl-navigation__link" href="/">Feed</a>
-            <a class="mdl-navigation__link" href="/pages/help">Help</a>
+            <a class="mdl-navigation__link" href="/">Home</a>
+            <a class="mdl-navigation__link" href="/pages/info">Info</a>
+            <a
+              class="mdl-navigation__link"
+              href="https://github.com/hauph/pwa-tryout"
+              target="_blank"
+              rel="noopener noreferrer"
+              >View Source</a
+            >
             <div class="drawer-option">
               <button
                 class="enable-notifications mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-color--accent"
@@ -173,7 +187,7 @@
               </div>
             </form>
           </div>
-          <img
+          <!-- <img
             src="/images/main-image.jpg"
             srcset="
               /images/main-image-lg.jpg 1200w,
@@ -182,10 +196,10 @@
             "
             alt="Explore the City"
             class="main-image"
-          />
+          /> -->
           <div class="page-content">
             <h5 class="text-center mdl-color-text--primary">
-              Share your Moments
+              Let's Share Moments
             </h5>
             <div id="shared-moments" class="mdl-grid"></div>
           </div>
@@ -193,6 +207,7 @@
             <button
               class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored"
               id="share-image-button"
+              data-tippy-content="Add new post"
             >
               <i class="material-icons">add</i>
             </button>
@@ -214,7 +229,6 @@
           <!-- The Close Button -->
           <span id="modal-close">&times;</span>
 
-          <!-- Modal Content (The Image) -->
           <div class="mdl-card modal-content">
             <div class="modal__img-title">
               <img id="modal-content" />
@@ -226,8 +240,22 @@
             </div>
             <div id="modal-caption"></div>
           </div>
-
-          <!-- Modal Caption (Image Text) -->
+          <div class="model__button-group">
+            <!-- Icon button -->
+            <button
+              id="modal--btn-prev"
+              class="mdl-button mdl-js-button mdl-button--icon"
+            >
+              <span class="material-icons"> chevron_left </span>
+            </button>
+            <!-- Colored icon button -->
+            <button
+              id="modal--btn-next"
+              class="mdl-button mdl-js-button mdl-button--icon"
+            >
+              <span class="material-icons"> chevron_right </span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

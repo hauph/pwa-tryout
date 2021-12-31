@@ -53,7 +53,9 @@ self.addEventListener('fetch', (event) => {
           .then((data) => {
             // eslint-disable-next-line
             for (const key in data) {
-              writeData('posts', data[key]);
+              const fbObj = { ...data[key] };
+              fbObj.fbId = key;
+              writeData('posts', fbObj);
             }
           });
         return res;

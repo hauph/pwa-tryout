@@ -16,6 +16,7 @@
 /* Modal Content (Image) */
 .modal-content {
   margin: 50px auto;
+  margin-bottom: 0;
   display: block;
   width: 100%;
   max-width: 1000px;
@@ -90,5 +91,39 @@
 @media only screen and (max-width: 480px) {
   .modal-content .mdl-card__title {
     display: none;
+  }
+}
+
+.modal .model__button-group {
+  text-align: center;
+}
+
+.modal .model__button-group button {
+  width: 50px;
+  height: 50px;
+}
+
+.modal .model__button-group button span {
+  color: #fff;
+  font-size: 50px;
+  width: 50px;
+  height: 50px;
+  transform: translate(-50%, -50%);
+  line-height: 1;
+}
+
+@media (min-width: 1170px) {
+  .modal .model__button-group button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .modal .model__button-group button:first-child {
+    left: 0;
+  }
+
+  .modal .model__button-group button:last-child {
+    right: 0;
   }
 }

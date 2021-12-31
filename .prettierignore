@@ -1,3 +1,4 @@
 build/
 node_modules/
 functions/index.js
+src/plugins

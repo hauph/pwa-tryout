@@ -1,5 +1,7 @@
 /* eslint-disable consistent-return */
-
+const enableNotificationsButtons = document.querySelectorAll(
+  '.enable-notifications',
+);
 class App {
   constructor() {
     const instance = this.constructor.instance;
@@ -15,6 +17,9 @@ class App {
   init() {
     this.registerSW();
     this.initNotification();
+    if ('Notification' in window && 'serviceWorker' in navigator) {
+      this.askForNotificationPermission();
+    }
   }
 
   registerSW() {
@@ -35,10 +40,8 @@ class App {
     });
   }
 
-  initNotification() {
-    const enableNotificationsButtons = document.querySelectorAll(
-      '.enable-notifications',
-    );
+  configurePushSub() {
+    let reg;
 
     function displayConfirmNotification() {
       if ('serviceWorker' in navigator) {
@@ -67,36 +70,28 @@ class App {
         };
 
         navigator.serviceWorker.ready.then((swreg) => {
-          swreg.showNotification('Successfully subscribed', options);
+          swreg
+            .showNotification('Successfully subscribed', options)
+            .then(() => {
+              for (let i = 0; i < enableNotificationsButtons.length; i++) {
+                enableNotificationsButtons[i].style.display = 'none';
+              }
+            });
         });
       }
     }
 
-    function configurePushSub() {
-      // if (!('serviceWorker' in navigator)) {
-      //   return;
-      // }
-
-      let reg;
-      navigator.serviceWorker.ready
-        .then((swreg) => {
-          reg = swreg;
-          return swreg.pushManager.getSubscription();
-        })
-        .then((sub) => {
-          if (sub === null) {
-            // Create a new subscription
-            const vapidPublicKey =
-              'BOmdE_7-5xIui2gOettwQwJ5HEbbZ0dwvImwIjX4VQ83c-zkx5j4ewPDACzgM81ryrRkbnUrlggr6BA51vsM8e8';
-            const convertedVapidPublicKey =
-              // eslint-disable-next-line
-              urlBase64ToUint8Array(vapidPublicKey);
-            return reg.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: convertedVapidPublicKey,
-            });
-          }
-          // We have a subscription
+    function subscribePushNotification(
+      shouldDisplayConfirmNotification = false,
+    ) {
+      const vapidPublicKey =
+        'BOmdE_7-5xIui2gOettwQwJ5HEbbZ0dwvImwIjX4VQ83c-zkx5j4ewPDACzgM81ryrRkbnUrlggr6BA51vsM8e8';
+      // eslint-disable-next-line
+      const convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
+      reg.pushManager
+        .subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidPublicKey,
         })
         .then((newSub) => {
           if (newSub)
@@ -111,33 +106,77 @@ class App {
             });
         })
         .then((res) => {
-          if (res && res.ok) {
+          if (res && res.ok && shouldDisplayConfirmNotification) {
             displayConfirmNotification();
           }
-        })
-        .catch((err) => {
-          console.log(err);
         });
     }
 
-    function askForNotificationPermission() {
-      Notification.requestPermission((result) => {
-        console.log('User Choice', result);
-        if (result !== 'granted') {
-          console.log('No notification permission granted!');
-        } else {
-          configurePushSub();
-        }
-      });
-    }
+    navigator.serviceWorker.ready
+      .then((swreg) => {
+        reg = swreg;
+        return swreg.pushManager.getSubscription();
+      })
+      .then((sub) => {
+        if (sub !== null) {
+          for (let i = 0; i < enableNotificationsButtons.length; i++) {
+            enableNotificationsButtons[i].style.display = 'none';
+          }
 
+          // eslint-disable-next-line
+          fetch(`${baseURL()}deleteSubcribeData`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ endpoint: sub.endpoint }),
+          })
+            .then((res) => {
+              if (res && res.ok) {
+                sub.unsubscribe().then(() => {
+                  console.log('User is unsubscribed.');
+                  subscribePushNotification();
+                });
+              }
+            })
+            .catch((err) => {
+              console.log('deleteSubcribeData >>>', err);
+            });
+        } else {
+          subscribePushNotification(true);
+        }
+      })
+      .catch((err) => {
+        console.log('configurePushSub >>>', err);
+      });
+  }
+
+  askForNotificationPermission() {
+    Notification.requestPermission((result) => {
+      console.log('User Choice', result);
+      switch (result) {
+        case 'granted':
+          this.configurePushSub();
+          break;
+        case 'denied':
+          for (let i = 0; i < enableNotificationsButtons.length; i++) {
+            enableNotificationsButtons[i].style.display = 'none';
+          }
+          break;
+        default:
+          console.log('Notification is default');
+          break;
+      }
+    });
+  }
+
+  initNotification() {
     if ('Notification' in window && 'serviceWorker' in navigator) {
       for (let i = 0; i < enableNotificationsButtons.length; i++) {
         enableNotificationsButtons[i].style.display = 'inline-block';
-        enableNotificationsButtons[i].addEventListener(
-          'click',
-          askForNotificationPermission,
-        );
+        enableNotificationsButtons[i].addEventListener('click', () => {
+          this.askForNotificationPermission();
+        });
       }
     }
   }

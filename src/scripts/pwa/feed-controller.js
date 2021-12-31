@@ -22,6 +22,7 @@ class FeedController {
       readAllData('posts').then((data) => {
         if (!this.model.networkDataReceived) {
           console.log('From cache', data);
+          this.model.updateData(data);
           this.view.updateUI(data);
         }
       });
@@ -57,6 +58,7 @@ class FeedController {
           fbObj.fbId = key;
           dataArray.push(fbObj);
         }
+        this.model.updateData(dataArray);
         this.view.updateUI(dataArray);
       });
   }
@@ -78,8 +80,7 @@ class FeedController {
                   '#confirmation-toast',
                 );
                 const data = {
-                  message:
-                    'Your post was saved for deleting when you are back online!',
+                  message: 'Your post was saved for deleting!',
                 };
                 snackbarContainer.MaterialSnackbar.showSnackbar(data);
                 resolve(true);
@@ -112,22 +113,17 @@ class FeedController {
     try {
       const result = await promise;
       if (result) {
+        const { data } = this.model;
         const element = document.getElementById(fbId);
-        if (element) element.remove();
+        if (element) {
+          element.remove();
+          const newData = data.filter((dt) => dt.fbId !== fbId);
+          this.model.updateData(newData);
+        }
       }
     } catch (error) {
       console.log('promise error >>>', error);
     }
-  }
-
-  deleteDataOffline() {
-    // eslint-disable-next-line
-    readAllData('sync-deleted-posts').then((data) => {
-      data.forEach((dt) => {
-        const element = document.getElementById(dt.fbId);
-        if (element) element.remove();
-      });
-    });
   }
 
   sendData(title, location) {
@@ -157,6 +153,7 @@ class FeedController {
           fbObj.fbId = key;
           dataArray.push(fbObj);
         }
+        this.model.updateData(dataArray);
         this.view.updateUI(dataArray);
       });
   }
@@ -190,6 +187,21 @@ class FeedController {
     } else {
       this.sendData(title, location);
     }
+  }
+
+  handlePrevNext(type, id) {
+    const { data } = this.model;
+    let index = data.findIndex((dt) => dt.fbId === id);
+    switch (type) {
+      case 'prev':
+        index = index - 1 === -1 ? data.length - 1 : index - 1;
+        break;
+      default:
+        index = index + 1 === data.length ? 0 : index + 1;
+        break;
+    }
+    const newPost = data[index];
+    this.view.toggleImgModal(newPost);
   }
 }
 
