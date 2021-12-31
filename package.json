@@ -39,7 +39,6 @@
     "html-webpack-tags-plugin": "^3.0.1",
     "http-server": "^13.0.2",
     "idb": "^6.1.5",
-    "if-webpack-plugin": "^1.0.5",
     "mini-css-extract-plugin": "^1.6.1",
     "open-browser-once-plugin": "^1.0.0",
     "serve": "^12.0.0",
