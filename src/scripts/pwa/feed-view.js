@@ -1,6 +1,7 @@
 import tippy from 'tippy.js';
 import Toastr from '../toastr/toastr';
 
+const header = document.querySelector('header');
 const shareImageButton = document.querySelector('#share-image-button');
 const createPostArea = document.querySelector('#create-post');
 const closeCreatePostModalButton = document.querySelector(
@@ -81,6 +82,7 @@ export default class FeedView {
   openCreatePostModal() {
     setTimeout(() => {
       createPostArea.style.transform = 'translateY(0)';
+      header.style.display = 'none';
     }, 1);
     this.initializeMedia();
     this.initializeLocation();
@@ -103,6 +105,7 @@ export default class FeedView {
   }
 
   closeCreatePostModal() {
+    header.style.display = 'block';
     imagePickerArea.style.display = 'none';
     videoPlayer.style.display = 'none';
     canvasElement.style.display = 'none';
@@ -226,17 +229,18 @@ export default class FeedView {
     // Capture button
     captureButton.addEventListener('click', (event) => {
       canvasElement.style.display = 'block';
-      videoPlayer.style.display = 'none';
-      captureButton.style.display = 'none';
+      canvasElement.setAttribute('width', videoPlayer.offsetWidth);
+      canvasElement.setAttribute('height', videoPlayer.offsetHeight);
       const context = canvasElement.getContext('2d');
       context.drawImage(
         videoPlayer,
         0,
         0,
-        canvasElement.width,
-        videoPlayer.videoHeight /
-          (videoPlayer.videoWidth / canvasElement.width),
+        videoPlayer.offsetWidth,
+        videoPlayer.offsetHeight,
       );
+      videoPlayer.style.display = 'none';
+      captureButton.style.display = 'none';
       videoPlayer.srcObject.getVideoTracks().forEach((track) => {
         track.stop();
       });

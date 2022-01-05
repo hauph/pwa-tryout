@@ -2,10 +2,9 @@
   z-index: 1001;
   position: fixed;
   width: 100%;
-  min-height: calc(100vh - 56px);
+  height: 100vh;
   overflow-y: scroll;
   bottom: 0;
-  top: 56px;
   background: white;
   text-align: center;
   transform: translateY(100vh);
