@@ -114,7 +114,7 @@
 
 @media (min-width: 1170px) {
   .modal .model__button-group button {
-    position: absolute;
+    position: fixed;
     top: 50%;
     transform: translateY(-50%);
   }

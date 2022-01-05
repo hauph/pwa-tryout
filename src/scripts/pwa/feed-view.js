@@ -107,6 +107,7 @@ export default class FeedView {
   closeCreatePostModal() {
     header.style.display = 'block';
     imagePickerArea.style.display = 'none';
+    imagePicker.value = '';
     videoPlayer.style.display = 'none';
     canvasElement.style.display = 'none';
     locationBtn.style.display = 'inline';
@@ -133,7 +134,7 @@ export default class FeedView {
   createCard(data) {
     const cardWrapper = document.createElement('div');
     cardWrapper.className =
-      'shared-moment-card mdl-cell--3-col mdl-card mdl-shadow--2dp';
+      'shared-moment-card mdl-cell--3-col mdl-cell--4-col-tablet mdl-card mdl-shadow--2dp';
     const cardTitle = document.createElement('div');
     cardTitle.className = 'mdl-card__title';
     cardTitle.style.backgroundImage = `url(${data.image})`;

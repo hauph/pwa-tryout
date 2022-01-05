@@ -141,20 +141,11 @@ class FeedController {
       method: 'POST',
       body: postData,
     })
-      .then((res) => {
-        console.log('Sent data', res);
-        return res.json();
+      .then(() => {
+        this.fetchData();
       })
-      .then((data) => {
-        const dataArray = [];
-        // eslint-disable-next-line
-        for (const key in data) {
-          const fbObj = { ...data[key] };
-          fbObj.fbId = key;
-          dataArray.push(fbObj);
-        }
-        this.model.updateData(dataArray);
-        this.view.updateUI(dataArray);
+      .catch((err) => {
+        console.error('error fetching storePostData', err);
       });
   }
 
